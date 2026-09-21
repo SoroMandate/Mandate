@@ -1,6 +1,5 @@
-
 # Mandate
-Reusable spending-policy contracts for Soroban smart accounts. 
+Reusable spending-policy contracts for Soroban smart accounts. <img width="1264" height="384" alt="mandate-logo" src="https://github.com/user-attachments/assets/2506b6d3-5652-4f70-9e3a-42953004207a" />
 
 
  [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE) [![Language: Rust](https://img.shields.io/badge/Language-Rust-orange.svg)](https://www.rust-lang.org/) [![Rust](https://img.shields.io/badge/Rust-stable-orange.svg)](https://www.rust-lang.org/) [![Status: unaudited](https://img.shields.io/badge/Status-unaudited-red.svg)](SECURITY.md)
