@@ -3,7 +3,7 @@
 Reusable spending-policy contracts for Soroban smart accounts. 
 
 
-(https://github.com/<org>/mandate/actions/workflows/ci.yml) [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE) [![Language: Rust](https://img.shields.io/badge/Language-Rust-orange.svg)](https://www.rust-lang.org/) [![Rust](https://img.shields.io/badge/Rust-stable-orange.svg)](https://www.rust-lang.org/) [![Status: unaudited](https://img.shields.io/badge/Status-unaudited-red.svg)](SECURITY.md)
+ [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE) [![Language: Rust](https://img.shields.io/badge/Language-Rust-orange.svg)](https://www.rust-lang.org/) [![Rust](https://img.shields.io/badge/Rust-stable-orange.svg)](https://www.rust-lang.org/) [![Status: unaudited](https://img.shields.io/badge/Status-unaudited-red.svg)](SECURITY.md)
 
 Reusable spending-policy contracts for Soroban smart accounts. Give agents and apps a budget, not your keys.
 
