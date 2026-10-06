@@ -4,6 +4,7 @@ members = [
     "crates/mandate-core",
     "crates/mandate-soroban",
     "contracts/allowlist-policy",
+    "contracts/time-window-policy",
 ]
 
 [workspace.package]

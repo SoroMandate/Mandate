@@ -84,3 +84,7 @@ Configuration and state entries live in persistent storage. They are extended to
 ## D13: Dependency pin for tests
 
 `soroban-env-host` 26.1.3 accepts `ed25519-dalek` 3.x, but its testutils only compile against 2.x. `Cargo.lock` pins `ed25519-dalek` to 2.2.0, matching OpenZeppelin's lockfile. Do not run a blanket `cargo update` without checking this pin.
+
+## D14: Time-window contract parameters
+
+On-chain parameters use `u32` for `day_mask` and the hour values, because Soroban contract types have no `u8`. The contract narrows each value to `u8` with a checked conversion before `mandate-core` validates it, so a value such as `256 + 20` is rejected instead of being truncated to `20`. A `Contract` context whose address or function name cannot be read fails with `InvalidContext` (4204), not `OutsideTimeWindow`, so the error does not give a misleading reason.

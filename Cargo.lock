@@ -2043,6 +2043,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "time-window-policy"
+version = "0.1.0"
+dependencies = [
+ "mandate-core",
+ "mandate-soroban",
+ "soroban-sdk",
+ "stellar-accounts",
+]
+
+[[package]]
 name = "tinyvec"
 version = "1.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
