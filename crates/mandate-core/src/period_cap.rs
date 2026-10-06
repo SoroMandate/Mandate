@@ -32,6 +32,17 @@ impl PeriodCapConfig {
         period_secs: u64,
         allowed_functions: &[&str],
     ) -> Result<Self, ConfigError> {
+        Self::with_fn_list(token, limit, period_secs, FnList::new(allowed_functions)?)
+    }
+
+    /// Like [`Self::new`], for callers that build the function list with
+    /// [`FnList::push`].
+    pub fn with_fn_list(
+        token: [u8; 32],
+        limit: i128,
+        period_secs: u64,
+        allowed_functions: FnList,
+    ) -> Result<Self, ConfigError> {
         if limit <= 0 {
             return Err(ConfigError::NonPositiveLimit);
         }
@@ -42,7 +53,7 @@ impl PeriodCapConfig {
             token,
             limit,
             period_secs,
-            allowed_functions: FnList::new(allowed_functions)?,
+            allowed_functions,
         })
     }
 
@@ -154,6 +165,15 @@ pub fn evaluate(
     )
 }
 
+/// Contract-creation contexts move no tokens: they are allowed and leave the
+/// state unchanged.
+pub fn evaluate_create_contract(
+    _config: &PeriodCapConfig,
+    state: &Option<PeriodCapState>,
+) -> (Decision, Option<PeriodCapState>) {
+    (Decision::Allow, *state)
+}
+
 #[cfg(test)]
 mod tests {
     extern crate std;
@@ -253,6 +273,16 @@ mod tests {
             timestamp: T0,
         };
         assert_eq!(evaluate(&cfg, &s, &balance), (Decision::Allow, s));
+    }
+
+    #[test]
+    fn contract_creation_is_allowed_without_spending() {
+        let cfg = config(50, DAY);
+        let s = Some(PeriodCapState {
+            period_start: T0,
+            spent: 50,
+        });
+        assert_eq!(evaluate_create_contract(&cfg, &s), (Decision::Allow, s));
     }
 
     #[test]

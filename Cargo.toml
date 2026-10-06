@@ -5,6 +5,7 @@ members = [
     "crates/mandate-soroban",
     "contracts/allowlist-policy",
     "contracts/time-window-policy",
+    "contracts/period-cap-policy",
 ]
 
 [workspace.package]

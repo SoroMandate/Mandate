@@ -30,7 +30,7 @@ Every rule exposes `evaluate(&config, &state, &call) -> (Decision, NewState)`. T
 `Call` describes only contract invocations, matching the specification. Contract-creation contexts are handled by a separate pure function on each rule that cares about them, so the decision still lives in core:
 - `allowlist::evaluate_create_contract`: always `Deny(ContractCreation)`.
 - `time_window::evaluate_create_contract`: applies the same time window.
-- `period_cap`: contract creation moves no tokens, so the contract allows it without consulting a rule function.
+- `period_cap::evaluate_create_contract`: contract creation moves no tokens, so it is allowed and the state is left unchanged.
 
 ## D4: Validation happens in constructors
 
@@ -88,3 +88,13 @@ Configuration and state entries live in persistent storage. They are extended to
 ## D14: Time-window contract parameters
 
 On-chain parameters use `u32` for `day_mask` and the hour values, because Soroban contract types have no `u8`. The contract narrows each value to `u8` with a checked conversion before `mandate-core` validates it, so a value such as `256 + 20` is rejected instead of being truncated to `20`. A `Contract` context whose address or function name cannot be read fails with `InvalidContext` (4204), not `OutsideTimeWindow`, so the error does not give a misleading reason.
+
+## D15: Period-cap storage and lifecycle
+
+- **One budget per token.** Configuration is keyed by `(smart account, context rule ID)`, as in D9. Spending state is keyed by `(smart account, token)`, as the specification requires. If several context rules cap the same token, they all draw on one counter, and each rule checks its own limit against it. An agent therefore cannot get around a cap by switching to another rule.
+- **Uninstall keeps the state.** `uninstall` removes only the configuration. Otherwise uninstalling and reinstalling the policy would reset a period's spending. The leftover state expires with its TTL.
+- **`set_config` keeps the state.** Lowering the limit below the amount already spent leaves `remaining` at 0 until the period ends.
+- **Reading the amount.** The contract decodes `args[2]` as `i128` whenever it can, and `mandate-core` decides whether that amount matters. Function names never appear in the contract's logic. If `args[2]` is missing or is not an `i128`, the amount is `None`, and a `transfer` on the token is then denied with `InvalidAmount`.
+- **`transfer_from` and `approve` are denied** unless listed in `allowed_functions`, because both can move the account's tokens.
+- **Writes and events.** State is written only when it changes, which means an allowed `transfer`. Each write extends the entry's TTL and emits `PeriodCapSpent { smart_account, token, context_rule_id, period_start, spent }`. Unlike a denial, this event survives because the invocation succeeds.
+- **Getters.** `get_state(smart_account, token)` returns the stored state, which may belong to a period that has already ended. `remaining(smart_account, context_rule_id)` evaluates the current period at the ledger time.
