@@ -1,0 +1,6 @@
+/target
+**/node_modules
+**/dist
+apps/simulator/src/wasm/pkg
+test_snapshots/
+.env
