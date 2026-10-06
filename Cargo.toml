@@ -1,6 +1,10 @@
 [workspace]
 resolver = "2"
-members = ["crates/mandate-core"]
+members = [
+    "crates/mandate-core",
+    "crates/mandate-soroban",
+    "contracts/allowlist-policy",
+]
 
 [workspace.package]
 version = "0.1.0"
@@ -11,7 +15,10 @@ rust-version = "1.84"
 
 [workspace.dependencies]
 mandate-core = { path = "crates/mandate-core" }
+mandate-soroban = { path = "crates/mandate-soroban" }
 proptest = "1.5"
+soroban-sdk = { version = "=26.1.0", features = ["hazmat-address"] }
+stellar-accounts = "=0.7.2"
 
 # Soroban contracts require a small, panic=abort release build.
 [profile.release]

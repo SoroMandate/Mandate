@@ -35,6 +35,14 @@ impl AllowEntry {
         })
     }
 
+    /// An entry that allows only the functions in `functions` on `contract`.
+    pub fn with_fn_list(contract: [u8; 32], functions: FnList) -> Self {
+        Self {
+            contract,
+            functions: Some(functions),
+        }
+    }
+
     /// The listed functions, or `None` if every function is allowed.
     pub fn functions(&self) -> Option<impl Iterator<Item = &FnName>> {
         self.functions.as_ref().map(FnList::iter)

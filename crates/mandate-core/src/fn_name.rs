@@ -68,6 +68,17 @@ impl FnList {
         Ok(list)
     }
 
+    /// Appends a name, for callers that cannot build a `&[&str]` up front.
+    pub fn push(&mut self, name: &str) -> Result<(), ConfigError> {
+        let slot = self
+            .names
+            .get_mut(self.len as usize)
+            .ok_or(ConfigError::TooManyFunctions)?;
+        *slot = Some(FnName::new(name)?);
+        self.len += 1;
+        Ok(())
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &FnName> {
         self.names[..self.len as usize].iter().flatten()
     }
@@ -114,6 +125,12 @@ mod tests {
     fn fn_list_capacity_and_lookup() {
         let list = FnList::new(&["transfer", "approve"]).unwrap();
         assert!(list.contains("approve"));
+        let mut pushed = FnList::empty();
+        pushed.push("transfer").unwrap();
+        pushed.push("approve").unwrap();
+        assert_eq!(pushed, list);
+        let mut full = FnList::new(&["f"; MAX_FN_LIST_LEN]).unwrap();
+        assert_eq!(full.push("g"), Err(ConfigError::TooManyFunctions));
         assert!(!list.contains("burn"));
         assert_eq!(list.len(), 2);
         assert_eq!(

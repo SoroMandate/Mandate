@@ -56,3 +56,31 @@ UTC weekday = `((timestamp / 86400) + 3) % 7`, with Monday as 0. The Unix epoch 
 ## D7: Stable reason and error codes
 
 `Reason` and `ConfigError` use `#[repr(u32)]` with fixed discriminants, plus `as_str()` names. The contracts, the CLI, and the simulator all report the same names.
+
+## D8: Denials are reported through typed errors, not events
+
+OpenZeppelin's `Policy::enforce` denies a context by failing the invocation. A failed invocation rolls back every contract event it published, and testing showed these events do not appear in diagnostic output either. A "denied" event emitted just before the panic would therefore never reach anyone, so the policies do not emit one.
+
+The reason for a denial is carried by the policy's `#[contracterror]` code instead. The host records it as a diagnostic `error` event (for example `Error(Contract, #4103)`), and RPC transaction simulation returns that event to wallets. A test checks this for each policy. Install, reconfigure, and uninstall do succeed, and they emit ordinary contract events.
+
+## D9: Storage is keyed by (smart account, context rule ID)
+
+Following OpenZeppelin's own policies, one policy deployment serves many smart accounts. Each account keeps a separate configuration for each context rule it attaches the policy to. Every mutating entry point (`install`, `set_config`, `uninstall`) calls `smart_account.require_auth()`. `enforce` does the same, matching OpenZeppelin, so one account can never read or change another account's state.
+
+The read-only getters therefore take `(smart_account, context_rule_id)`.
+
+## D10: `mandate-soroban` glue crate
+
+Converting `Address` to `[u8; 32]`, `Symbol` to `&str`, and `ContractContext` to `Call`, along with the TTL constants, is needed by all three contracts. That shared code lives in `crates/mandate-soroban`, which contains no policy logic. Only contract (`C...`) addresses can be converted. Anything else is rejected as an invalid configuration, or treated as a denial in `enforce`. The crate uses the `hazmat-address` feature of `soroban-sdk` solely to read a contract address's 32-byte ID.
+
+## D11: Error code ranges
+
+Each policy owns a range of error codes so that errors from several policies on one account can be told apart: allowlist `4100–4199`, time window `4200–4299`, period cap `4300–4399`. OpenZeppelin's policies use `32xx`.
+
+## D12: TTLs
+
+Configuration and state entries live in persistent storage. They are extended to 30 days whenever they are written or read during `enforce`, and only once their remaining TTL drops below 29 days. Each policy contract also extends its own instance TTL on `install`, `set_config`, and `enforce`.
+
+## D13: Dependency pin for tests
+
+`soroban-env-host` 26.1.3 accepts `ed25519-dalek` 3.x, but its testutils only compile against 2.x. `Cargo.lock` pins `ed25519-dalek` to 2.2.0, matching OpenZeppelin's lockfile. Do not run a blanket `cargo update` without checking this pin.
